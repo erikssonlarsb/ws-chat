@@ -41,23 +41,27 @@
             </md-input-container>
             <md-list>
                 <md-list-item class="md-3-line" ng-repeat="message in messages | orderBy:'timestamp':true" ng-click="null">
-                    <div ng-if="message.sender == 'SYSTEM'">
-                        <div class="md-list-item-text" layout="row">
-                            <i class="fa fa-cogs fa-2x md-avatar" style="color:#337ab7"></i>
-                            <div layout="column">
-                                <p>{{message.timestamp | date:'short'}}</p>
-                                <h4>User {{message.data}} joined</h4>
-                            </div>
-                        </div>
+                    <i
+                        ng-show="message.sender == 'SYSTEM'"
+                        class="fa fa-cogs fa-2x md-avatar"
+                        style="color:#337ab7"></i>
+                    <div
+                        ng-show="message.sender == 'SYSTEM'"
+                        class="md-list-item-text"
+                        layout="column">
+                        <h4>{{message.timestamp | date:'short'}}</h4>
+                        <p>User {{message.data}} joined</p>
                     </div>
-                    <div ng-if="message.sender != 'SYSTEM'">
-                        <div class="md-list-item-text" layout="row">
-                            <i class="fa fa-user fa-2x md-avatar" style="color:#337ab7"></i>
-                            <div layout="column">
-                                <p>{{message.sender}} {{message.timestamp | date:'short'}}</p>
-                                <h4>{{message.data}}</h4>
-                            </div>
-                        </div>
+                    <i
+                        ng-show="message.sender != 'SYSTEM'"
+                        class="fa fa-user fa-2x md-avatar"
+                        style="color:#337ab7"></i>
+                    <div
+                        ng-show="message.sender != 'SYSTEM'"
+                        class="md-list-item-text"
+                        layout="column">
+                        <h4>{{message.sender}} {{message.timestamp | date:'short'}}</h4>
+                        <p>{{message.data}}</p>
                     </div>
                 </md-list-item>
             </md-list>
