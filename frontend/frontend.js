@@ -102,7 +102,7 @@ app.factory('websocket', ['$rootScope', '$http', '$location', '$q', '$websocket'
             $http.get('session').then(
                 function(response) {
                     // Open a WebSocket connection
-                    ws = $websocket('ws://' + $location.$$host + ':' + response.data.port + '/' + response.data.path);
+                    ws = $websocket('ws://' + $location.$$host + ':' + response.data.port + '/' + response.data.path + '/' + response.data.ws);
 
                     ws.onClose(function(event) {
                         if(!event.wasClean) {

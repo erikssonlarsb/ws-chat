@@ -6,6 +6,7 @@ var args = require('minimist')(process.argv.slice(2), {
     default: {
         port: '3000',
         path: '',
+        ws: 'ws'
     }
 });
 
@@ -27,11 +28,12 @@ app.get('/'+args.path+'/session', function(req, res){
   }
   res.send({
       path: args.path,
-      port: args.port
+      port: args.port,
+      ws: args.ws
   });
 });
 
-app.ws('/chat', function(ws, request) {
+app.ws('/'+args.path+'/'+args.ws, function(ws, request) {
     var client;
     if(clients[request.cookies.WSSESSIONID]) {
 
