@@ -1,10 +1,10 @@
 {
-  "name": "skull",
+  "name": "ws-chat",
   "version": "0.0.1",
-  "description": "Implementation of the skull boardgame.",
+  "description": "A simple chat app built on websockets.",
   "keywords": [
-    "skull",
-    "board game"
+    "websockets",
+    "chat"
   ],
   "author": "lars.eriksson",
   "dependencies": {
@@ -13,7 +13,6 @@
     "angular-aria": "^1.5.8",
     "angular-material": "^1.1.1",
     "angular-messages": "^1.5.8",
-    "angular-route": "^1.5.8",
     "angular-websocket": "^2.0.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
@@ -23,6 +22,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/erikssonlarsb/skull.git"
+    "url": "https://github.com/erikssonlarsb/ws-chat.git"
   }
 }

@@ -15,8 +15,6 @@ var Message = require("./message.js");
 var clients = {};
 var messages = [];
 
-console.log(args);
-
 app.use(cookieParser());
 app.use('/'+args.path, express.static('frontend'));
 app.use('/'+args.path+'/node_modules', express.static('node_modules'));
