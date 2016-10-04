@@ -1,18 +1,24 @@
 var method = Client.prototype;
 
-function Client(socket) {
+function Client(socket, id) {
     this.socket = socket;
-    randomNumber=Math.random().toString();
-    this.id = randomNumber.substring(2,randomNumber.length);
-    this.name = "";
+    this.id = id;
 }
 
 method.getSocket = function() {
     return this.socket;
 };
 
+method.setSocket = function(socket) {
+     this.socket = socket;
+};
+
 method.getId = function() {
     return this.id;
+};
+
+method.setId = function(id) {
+    this.id = id;
 };
 
 method.getName = function() {
