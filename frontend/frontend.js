@@ -1,4 +1,4 @@
-var app = angular.module('skull', [
+var app = angular.module('ws-chat', [
     'ngMaterial',
     'ngWebSocket',
 
@@ -8,11 +8,16 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
     $scope.messages = [];
 
     $scope.registerUser = function() {
-        $scope.isRegistered = true;
-        websocket.send({
-            type: 'NEW_USER',
-            name: $scope.name
-        });
+        if($scope.name) {
+            websocket.send({
+                type: 'NEW_USER',
+                name: $scope.name
+            }).then(
+                function(success) {
+                    $scope.isRegistered = true;
+                }
+            );
+        }
     }
 
     $scope.sendMessage = function() {
@@ -20,17 +25,26 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
             websocket.send({
                 type: 'CHAT',
                 data: $scope.message
-            });
-            $scope.message = "";
+            }).then(
+                function(success) {
+                    $scope.message = "";
+                }
+            );
         }
     }
 
     $scope.$on('NEW_CONNECTION', function(event) {
         $scope.isRegistered = false;
+        $scope.messages = [];
     });
 
-    $scope.$on('CONNECTION_ERROR', function(event) {
+    $scope.$on('CONNECTION_CLOSED', function(event, data) {
         $scope.isRegistered = false;
+        $scope.messages = [{
+            timestamp: new Date(),
+            sender: 'SYSTEM',
+            data: 'CONNECTION_CLOSED:' + data
+        }];
     });
 
     $scope.$on('CHAT', function(event, data) {
@@ -45,16 +59,19 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
         $scope.messages = data.data.messages;
     });
 
-    websocket.init().then(function(success) {
-        if (success.type == "EXISTING_CONNECTION" && success.data.name) {
-            $scope.name = success.data.name;
-            $scope.isRegistered = true;
-        } else {
-            $scope.isRegistered = false;
+    websocket.init().then(
+        function(success) {
+            if (success.type == "EXISTING_CONNECTION") {
+                $scope.name = success.data.name;
+                $scope.isRegistered = true;
+            } else {
+                $scope.isRegistered = false;
+            }
+            $scope.initiated = true;
+        }, function(error) {
+            console.log(error);
         }
-    }, function(error) {
-        console.log(error);
-    });
+    );
 }]);
 
 app.directive('ngEnter', function () {
@@ -100,14 +117,18 @@ app.factory('websocket', ['$rootScope', '$http', '$location', '$q', '$websocket'
     function init() {
         return $q(function(resolve, reject) {
             $http.get('session').then(
-                function(response) {
+                function(success) {
                     // Open a WebSocket connection
-                    ws = $websocket('ws://' + $location.$$host + ':' + response.data.port + '/' + response.data.path + '/' + response.data.ws);
+                    ws = $websocket('ws://' + $location.$$host + ':' + $location.$$port + success.data.path + success.data.ws);
 
                     ws.onClose(function(event) {
                         if(!event.wasClean) {
-                            setTimeout(function(){init()}, 5000);
-                        };
+                            setTimeout(function(){
+                                init();
+                            }, 5000);
+                        } else {
+                            $rootScope.$broadcast("CONNECTION_CLOSED", event.reason);
+                        }
                     });
 
                     ws.onMessage(function(message) {
@@ -120,7 +141,7 @@ app.factory('websocket', ['$rootScope', '$http', '$location', '$q', '$websocket'
                         }
                     });
 
-                }, function(response) {
+                }, function(error) {
                     setTimeout(function(){init()}, 5000);
                 }
             );
@@ -128,8 +149,18 @@ app.factory('websocket', ['$rootScope', '$http', '$location', '$q', '$websocket'
     }
 
     function send(message) {
-        ws.send(message);
+        return $q(function(resolve, reject) {
+            ws.send(message).then(
+                function(success) {
+                    resolve();
+                },
+                function(error) {
+                    reject();
+                }
+            )
+        })
     }
+
 
     return {
         init: init,

@@ -4,13 +4,15 @@
 
         <link rel="stylesheet" href="node_modules/angular-material/angular-material.min.css">
         <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+        <title>ws-chat</title>
     </head>
-    <body ng-app="skull" ng-cloak ng-controller="mainController">
-        <md-content layout-padding>
+    <body ng-app="ws-chat" ng-cloak ng-controller="mainController">
+        <md-content
+            ng-show="initiated"
+            layout-padding>
             <md-input-container layout="row" ng-hide="isRegistered">
                 <label>Name</label>
                 <textarea
-                    required
                     ng-enter="registerUser()"
                     ng-blur-on-enter
                     ng-disabled="isRegistered"
@@ -18,6 +20,7 @@
                 </textarea>
                 <md-button
                     ng-click="registerUser()"
+                    ng-disabled="!name.length"
                     ng-hide="isRegistered">
                     Register
                 </md-button>
@@ -33,7 +36,6 @@
                     md-select-on-focus>
                 </textarea>
                 <md-button
-                    type="button"
                     ng-disabled="!isRegistered || !message.length"
                     ng-click="sendMessage()">
                     Send
@@ -50,7 +52,7 @@
                         class="md-list-item-text"
                         layout="column">
                         <h4>{{message.timestamp | date:'short'}}</h4>
-                        <p>User {{message.data}} joined</p>
+                        <p>{{message.data}}</p>
                     </div>
                     <i
                         ng-show="message.sender != 'SYSTEM'"
@@ -74,6 +76,5 @@
         <script src="node_modules/angular-material/angular-material.min.js"></script>
         <script src="node_modules/angular-websocket/dist/angular-websocket.min.js"></script>
         <script src="frontend.js"></script>
-
     </body>
 </html>

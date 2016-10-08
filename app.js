@@ -6,9 +6,15 @@ var args = require('minimist')(process.argv.slice(2), {
     default: {
         port: '3000',
         path: '',
-        ws: 'ws'
+        ws: '/ws'
     }
 });
+if(args.path.length > 0 && args.path.substring(0,1) != '/') {
+    args.path = '/' + args.path;
+};
+if(args.path.length > 0 && args.path.substring(0,1) != '/') {
+    args.path = '/' + args.path;
+};
 
 var Client = require("./client.js");
 var Message = require("./message.js");
@@ -17,10 +23,10 @@ var clients = {};
 var messages = [];
 
 app.use(cookieParser());
-app.use('/'+args.path, express.static('frontend'));
-app.use('/'+args.path+'/node_modules', express.static('node_modules'));
+app.use(args.path, express.static('frontend'));
+app.use(args.path + '/node_modules', express.static('node_modules'));
 
-app.get('/'+args.path+'/session', function(req, res){
+app.get(args.path + '/session', function(req, res){
   if(!req.cookies.WSSESSIONID) {
       var randomNumber=Math.random().toString();
       randomNumber=randomNumber.substring(2,randomNumber.length);
@@ -33,20 +39,24 @@ app.get('/'+args.path+'/session', function(req, res){
   });
 });
 
-app.ws('/'+args.path+'/'+args.ws, function(ws, request) {
+app.ws(args.path + args.ws, function(ws, request) {
     var client;
     if(clients[request.cookies.WSSESSIONID]) {
-
         client = clients[request.cookies.WSSESSIONID];
-        console.log("existing session: " + client.getId() + ":" + client.getName());
         client.setSocket(ws);
-        client.getSocket().send(JSON.stringify(new Message('SYSTEM', "EXISTING_CONNECTION", {name: client.getName()})));
-        client.getSocket().send(JSON.stringify(new Message('SYSTEM', "HISTORY", {messages: messages})));
+        if(client.getName()) {
+            console.log("existing registered session: " + client.getId() + ":" + client.getName());
+            client.getSocket().send(JSON.stringify(new Message('SYSTEM', "EXISTING_CONNECTION", {name: client.getName()})));
+            client.getSocket().send(JSON.stringify(new Message('SYSTEM', "HISTORY", {messages: messages})));
+        } else {
+            console.log("existing unregistered session: " + client.getId());
+            client.getSocket().send(JSON.stringify(new Message('SYSTEM', "NEW_CONNECTION")));
+        }
     } else {
         client = new Client(ws, request.cookies.WSSESSIONID);
         console.log("new session: " + client.getId());
         clients[request.cookies.WSSESSIONID] = client;
-        client.getSocket().send(JSON.stringify(new Message('SYSTEM', "NEW_CONNECTION")))
+        client.getSocket().send(JSON.stringify(new Message('SYSTEM', "NEW_CONNECTION", {id: client.getId()})));
     }
 
     ws.on('message', function(message) {
@@ -55,7 +65,7 @@ app.ws('/'+args.path+'/'+args.ws, function(ws, request) {
             client.setName(json.name);
 			console.log("client login: " + client.getId() + ":" + client.getName());
             client.getSocket().send(JSON.stringify(new Message('SYSTEM', "HISTORY", {messages: messages})));
-            sendAll(new Message('SYSTEM', json.type, client.getName()));
+            sendAll(new Message('SYSTEM', json.type, 'User ' + client.getName() + ' joined.'));
         } else {
             var message = new Message(client.getName(), json.type, json.data);
             messages.push(message);
@@ -71,9 +81,9 @@ app.listen(args.port, function () {
 
 function sendAll (message) {
     for (var id in clients) {
-        if(clients[id].getSocket().readyState == 1) {
+        if(clients[id].getSocket().readyState == 1 && clients[id].getName()) {
             clients[id].getSocket().send(JSON.stringify(message));
-        } else {
+        } else if(clients[id].getSocket().readyState == 3) {
             console.log("remove: " + clients[id].getId());
             delete clients[id];
         }
