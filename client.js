@@ -29,4 +29,12 @@ method.setName = function(name) {
     this.name = name;
 }
 
+method.getImage = function() {
+    return this.image;
+}
+
+method.setImage = function(image) {
+    this.image = image;
+}
+
 module.exports = Client;

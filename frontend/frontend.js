@@ -6,6 +6,15 @@ var app = angular.module('ws-chat', [
 
 app.controller('mainController', ['$scope', 'websocket', function($scope, websocket) {
     $scope.messages = [];
+    $scope.users = {};
+
+    $scope.isOpen = false;
+
+      $scope.demo = {
+        isOpen: false,
+        count: 0,
+        selectedDirection: 'left'
+      };
 
     $scope.registerUser = function() {
         if($scope.name) {
@@ -25,6 +34,19 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
             websocket.send({
                 type: 'CHAT',
                 data: $scope.message
+            }).then(
+                function(success) {
+                    $scope.message = "";
+                }
+            );
+        }
+    }
+
+    $scope.uploadImage = function(file) {
+        if(file) {
+            websocket.send({
+                type: 'IMAGE',
+                data: file
             }).then(
                 function(success) {
                     $scope.message = "";
@@ -57,6 +79,10 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
 
     $scope.$on('HISTORY', function(event, data) {
         $scope.messages = data.data.messages;
+    });
+
+    $scope.$on('IMAGE', function(event, data) {
+        $scope.users[data.sender] = data;
     });
 
     websocket.init().then(
@@ -106,6 +132,39 @@ app.directive('ngFocusOn', function() {
             $scope.$watch("focusVariable", function() {
                 $element[0].focus();
             })
+        }
+    }
+});
+
+app.directive('fileInput', function() {
+    return {
+        restrict: 'EA',
+        scope: {
+            onChange: '='
+        },
+        templateUrl: 'input-file.html',
+        link: function(scope, element, attrs) {
+            element.find('label')[0].className += " " + element[0].className;
+            element[0].className = "";
+
+            element.on('change', change);
+
+            scope.$on('destroy', function () {
+                element.off('change', change);
+            });
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                scope.onChange(e.target.result);
+                scope.$apply(function () {
+                    scope.image = e.target.result;
+                });
+            }
+
+            function change() {
+                reader.readAsDataURL(element.find('input')[0].files[0]);
+            }
         }
     }
 });

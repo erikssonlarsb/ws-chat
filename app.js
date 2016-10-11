@@ -48,6 +48,12 @@ app.ws(args.path + args.ws, function(ws, request) {
             console.log("existing registered session: " + client.getId() + ":" + client.getName());
             client.getSocket().send(JSON.stringify(new Message('SYSTEM', "EXISTING_CONNECTION", {name: client.getName()})));
             client.getSocket().send(JSON.stringify(new Message('SYSTEM', "HISTORY", {messages: messages})));
+            for (var id in clients) {
+                if(clients[id].getImage()) {
+                    client.getSocket().send(JSON.stringify(new Message(clients[id].getName(), "IMAGE", clients[id].getImage())));
+                }
+            }
+
         } else {
             console.log("existing unregistered session: " + client.getId());
             client.getSocket().send(JSON.stringify(new Message('SYSTEM', "NEW_CONNECTION")));
@@ -65,10 +71,19 @@ app.ws(args.path + args.ws, function(ws, request) {
             client.setName(json.name);
 			console.log("client login: " + client.getId() + ":" + client.getName());
             client.getSocket().send(JSON.stringify(new Message('SYSTEM', "HISTORY", {messages: messages})));
+            for (var id in clients) {
+                if(clients[id].getImage()) {
+                    client.getSocket().send(JSON.stringify(new Message(clients[id].getName(), "IMAGE", clients[id].getImage())));
+                }
+            }
             sendAll(new Message('SYSTEM', json.type, 'User ' + client.getName() + ' joined.'));
-        } else {
+        } else if(json.type == 'CHAT') {
             var message = new Message(client.getName(), json.type, json.data);
             messages.push(message);
+            sendAll(message);
+        } else if(json.type == 'IMAGE') {
+            client.setImage(json.data);
+            var message = new Message(client.getName(), json.type, json.data);
             sendAll(message);
         }
 

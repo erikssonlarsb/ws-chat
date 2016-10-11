@@ -1,0 +1,21 @@
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+}
+
+md-fab-toolbar {
+    position: absolute;
+    width: 100%;
+    right: 0px;
+    bottom: 0px;
+}
+
+md-icon.fa {
+    height: initial;
+    width: initial;
+}
+
+file-input label {
+    cursor: pointer;
+}
