@@ -5,7 +5,8 @@
 }
 
 md-fab-toolbar {
-    position: absolute;
+    position: fixed;
+    z-index: 1;
     width: 100%;
     right: 0px;
     bottom: 0px;
