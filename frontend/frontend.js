@@ -43,16 +43,25 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
     }
 
     $scope.uploadImage = function(file) {
-        if(file) {
-            websocket.send({
-                type: 'IMAGE',
-                data: file
-            }).then(
-                function(success) {
-                    $scope.message = "";
-                }
-            );
-        }
+        var img = new Image();
+        var canvas = document.createElement('canvas');
+        img.onload = function () {
+            canvas.width = this.naturalWidth; // or 'width' if you want a special/scaled size
+            canvas.height = this.naturalHeight; // or 'height' if you want a special/scaled size
+            canvas.getContext('2d').drawImage(this, 0, 0);
+            var resizedImg = canvas.toDataURL('image/png');
+            if(resizedImg) {
+                websocket.send({
+                    type: 'IMAGE',
+                    data: resizedImg
+                }).then(
+                    function(success) {
+                        //$scope.message = "";
+                    }
+                );
+            }
+        };
+        img.src = file;
     }
 
     $scope.$on('NEW_CONNECTION', function(event) {
@@ -157,9 +166,6 @@ app.directive('fileInput', function() {
 
             reader.onload = function (e) {
                 scope.onChange(e.target.result);
-                scope.$apply(function () {
-                    scope.image = e.target.result;
-                });
             }
 
             function change() {

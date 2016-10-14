@@ -27,16 +27,19 @@ app.use(args.path, express.static('frontend'));
 app.use(args.path + '/node_modules', express.static('node_modules'));
 
 app.get(args.path + '/session', function(req, res){
-  if(!req.cookies.WSSESSIONID) {
-      var randomNumber=Math.random().toString();
-      randomNumber=randomNumber.substring(2,randomNumber.length);
-      res.cookie('WSSESSIONID', randomNumber, {httpOnly:true});
-  }
-  res.send({
-      path: args.path,
-      port: args.port,
-      ws: args.ws
-  });
+    console.log("requesting cookie");
+
+    if(!req.cookies.WSSESSIONID) {
+        var randomNumber=Math.random().toString();
+        randomNumber=randomNumber.substring(2,randomNumber.length);
+        res.cookie('WSSESSIONID', randomNumber, {httpOnly:true});
+        console.log("created new cookie: " + randomNumber);
+    }
+    res.send({
+        path: args.path,
+        port: args.port,
+        ws: args.ws
+    });
 });
 
 app.ws(args.path + args.ws, function(ws, request) {
@@ -86,7 +89,6 @@ app.ws(args.path + args.ws, function(ws, request) {
             var message = new Message(client.getName(), json.type, json.data);
             sendAll(message);
         }
-
     });
 });
 
@@ -98,10 +100,9 @@ function sendAll (message) {
     for (var id in clients) {
         if(clients[id].getSocket().readyState == 1 && clients[id].getName()) {
             clients[id].getSocket().send(JSON.stringify(message));
-        } else if(clients[id].getSocket().readyState == 3) {
+        } /* else if(clients[id].getSocket().readyState == 3) {
             console.log("remove: " + clients[id].getId());
             delete clients[id];
-        }
-
+        } */
     }
 }

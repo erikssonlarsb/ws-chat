@@ -1,6 +1,6 @@
 {
   "name": "ws-chat",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A simple chat app built on websockets.",
   "keywords": [
     "websockets",
