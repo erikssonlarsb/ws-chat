@@ -4,7 +4,7 @@ var app = angular.module('ws-chat', [
 
 ]);
 
-app.controller('mainController', ['$scope', 'websocket', function($scope, websocket) {
+app.controller('mainController', ['$scope', 'users', 'websocket', function($scope, users, websocket) {
     $scope.messages = [];
     $scope.users = {};
 
@@ -43,25 +43,15 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
     }
 
     $scope.uploadImage = function(file) {
-        var img = new Image();
-        var canvas = document.createElement('canvas');
-        img.onload = function () {
-            canvas.width = this.naturalWidth; // or 'width' if you want a special/scaled size
-            canvas.height = this.naturalHeight; // or 'height' if you want a special/scaled size
-            canvas.getContext('2d').drawImage(this, 0, 0);
-            var resizedImg = canvas.toDataURL('image/png');
-            if(resizedImg) {
-                websocket.send({
-                    type: 'IMAGE',
-                    data: resizedImg
-                }).then(
-                    function(success) {
-                        //$scope.message = "";
-                    }
-                );
-            }
-        };
-        img.src = file;
+        if(file) {
+            websocket.send({
+                type: 'IMAGE',
+                data: file
+            }).then(
+                function(success) {
+                }
+            );
+        }
     }
 
     $scope.$on('NEW_CONNECTION', function(event) {
@@ -90,8 +80,8 @@ app.controller('mainController', ['$scope', 'websocket', function($scope, websoc
         $scope.messages = data.data.messages;
     });
 
-    $scope.$on('IMAGE', function(event, data) {
-        $scope.users[data.sender] = data;
+    $scope.$on('IMAGE', function(event, message) {
+        users.addAvatar(message.sender, message.data)
     });
 
     websocket.init().then(
@@ -174,6 +164,57 @@ app.directive('fileInput', function() {
         }
     }
 });
+
+app.directive('avatar', function(users) {
+    return {
+        restrict: 'A',
+        scope: {
+            user: '=avatar'
+        },
+        link: function(scope, element, attrs) {
+            scope.$watch(function() {
+                return users.getAvatar(scope.user);
+            }, function(src) {
+                if(src) {
+                    element.removeClass("fa fa-user fa-2x");
+                    element.find('img').remove();
+                    var img = new Image();
+                    img.src = src;
+                    element.append(img);
+                }
+            });
+
+        }
+    }
+});
+
+
+app.factory('users', [function() {
+    var users = {};
+
+    function addUser(user) {
+        users[user.id] = user;
+    }
+
+    function addAvatar(user, src) {
+        if(users[user] == undefined) {
+            users[user] = {};
+        }
+        users[user].avatar = src;
+    }
+
+    function getAvatar(user) {
+        if(users[user]) {
+            return users[user].avatar;
+        }
+    }
+
+    return {
+        addUser: addUser,
+        addAvatar: addAvatar,
+        getAvatar: getAvatar
+    }
+}]);
 
 app.factory('websocket', ['$rootScope', '$http', '$location', '$q', '$websocket', function($rootScope, $http, $location, $q, $websocket) {
 

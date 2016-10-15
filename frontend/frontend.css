@@ -1,4 +1,8 @@
-.avatar {
+i.md-avatar {
+    color:#337ab7;
+}
+
+i.md-avatar img {
     width: 40px;
     height: 40px;
     border-radius: 20px;

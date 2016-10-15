@@ -59,8 +59,7 @@
                 <md-list-item class="md-3-line" ng-repeat="message in messages | orderBy:'timestamp':true" ng-click="null">
                     <i
                         ng-show="message.sender == 'SYSTEM'"
-                        class="fa fa-cogs fa-2x md-avatar"
-                        style="color:#337ab7"></i>
+                        class="fa fa-cogs fa-2x md-avatar"></i>
                     <div
                         ng-show="message.sender == 'SYSTEM'"
                         class="md-list-item-text"
@@ -69,14 +68,13 @@
                         <p>{{message.data}}</p>
                     </div>
                     <i
-                        ng-show="message.sender != 'SYSTEM' && !users[message.sender]"
+                        avatar="message.sender"
                         class="fa fa-user fa-2x md-avatar"
-                        style="color:#337ab7"></i>
-                    <i
-                        class="md-avatar"
-                        ng-show="users[message.sender]" >
+                        ng-show="message.sender != 'SYSTEM'" >
+                        <!--
                         <img class="avatar"
                             ng-src="{{users[message.sender].data}}"/>
+                        -->
                     </i>
                     <div
                         ng-show="message.sender != 'SYSTEM'"
