@@ -1,7 +1,9 @@
 var express = require('express');
 var cookieParser = require('cookie-parser')
 var app = express();
+var fs = require('fs');
 var websocket = require('express-ws')(app);
+var Jimp = require("jimp");
 var args = require('minimist')(process.argv.slice(2), {
     default: {
         port: '3000',
@@ -85,9 +87,23 @@ app.ws(args.path + args.ws, function(ws, request) {
             messages.push(message);
             sendAll(message);
         } else if(json.type == 'IMAGE') {
-            client.setImage(json.data);
-            var message = new Message(client.getName(), json.type, json.data);
-            sendAll(message);
+            var randomNumber=Math.random().toString();
+            randomNumber=randomNumber.substring(2,randomNumber.length);
+            var base64Data = json.data.replace(/^data:image\/(png|gif|jpeg);base64,/,'');
+            fs.writeFile(randomNumber+'_orig.png', new Buffer(base64Data, 'base64'), function() {
+                Jimp.read(randomNumber+'_orig.png').then(function (image) {
+                    image.resize(256, 256)
+                         .write(randomNumber+'_resize.png', function() {
+                             file = fs.readFileSync(randomNumber+'_resize.png');
+                             var message = new Message(client.getName(), json.type, 'data:image/png;base64,'+file.toString('base64'));
+                             sendAll(message);
+                             fs.unlinkSync(randomNumber+'_orig.png');
+                             fs.unlinkSync(randomNumber+'_resize.png');
+                         });
+                }).catch(function (err) {
+                    console.error(err);
+                });
+            });
         }
     });
 });
