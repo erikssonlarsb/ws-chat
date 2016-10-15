@@ -95,7 +95,8 @@ app.ws(args.path + args.ws, function(ws, request) {
                     image.resize(256, 256)
                          .write(randomNumber+'_resize.png', function() {
                              file = fs.readFileSync(randomNumber+'_resize.png');
-                             var message = new Message(client.getName(), json.type, 'data:image/png;base64,'+file.toString('base64'));
+                             client.setImage('data:image/png;base64,'+file.toString('base64'));
+                             var message = new Message(client.getName(), json.type, client.getImage());
                              sendAll(message);
                              fs.unlinkSync(randomNumber+'_orig.png');
                              fs.unlinkSync(randomNumber+'_resize.png');
